@@ -3,6 +3,7 @@ var token = process.env.TOKEN;
 var Bot = require('node-telegram-bot-api');
 var bot;
 const { search } = require('./database');
+const description = require('./description');
 
 if(process.env.NODE_ENV === 'production') {
   bot = new Bot(token);
@@ -19,9 +20,12 @@ bot.onText(/^/, async function (msg) {
     console.log('Ищем...');
   });
   const dbresult = await search(msg.text.toUpperCase());
-  bot.sendMessage(msg.chat.id, replyMessage(dbresult)).then(function () {
-    console.log('Result send');
-  });
+  replyMessage(dbresult).forEach(message => {
+    bot.sendMessage(msg.chat.id, message).then(function () {
+      console.log('Result send');
+    });
+  })
+
 });
 
 function replyMessage(dbresult) {
@@ -35,10 +39,23 @@ function replyMessage(dbresult) {
 }
 
 function companyReport(data) {
-  return Object.keys(data)
+  const lines = Object.keys(data)
     .filter(key => data[key] !== '0')
-    .map(key => `${key}: ${data[key]}`)
-    .join('\n');
+    .map(key => `${description[key]}: ${data[key]}`);
+
+  const messages = [];
+  let currentMessage = '';
+
+  lines.forEach(line => {
+    if((currentMessage + '\n' + line).length > 4096) {
+      messages.push(currentMessage);
+      currentMessage = '';
+    }
+    currentMessage = currentMessage + '\n' + line;
+  });
+  messages.push(currentMessage);
+
+  return messages;
 }
 
 module.exports = bot;
