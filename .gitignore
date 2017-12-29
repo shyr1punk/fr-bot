@@ -3,3 +3,5 @@ node_modules/*
 # Heroku environment configuration
 .env
 env.cmd
+.DS_Store
+data/*
