@@ -28,10 +28,17 @@ function replyMessage(dbresult) {
   if(dbresult.rows.length === 0) {
     return 'Ничего не нашли';
   } else if(dbresult.rows.length === 1) {
-    return JSON.stringify(dbresult.rows[0]);
+    return companyReport(dbresult.rows[0]);
   } else {
     return dbresult.rows.map((row, i) => `${i}. ${row.company_name}`).join('\n');
   }
+}
+
+function companyReport(data) {
+  return Object.keys(data)
+    .filter(key => data[key] !== '0')
+    .map(key => `${key}: ${data[key]}`)
+    .join('\n');
 }
 
 module.exports = bot;
