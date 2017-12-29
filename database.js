@@ -2,17 +2,14 @@ const { Client } = require('pg');
 const client = new Client();
 client.connect();
 
+// Поиск по названию
 async function search(criteria) {
   const query =
-    "SELECT company_name FROM reports WHERE company_name LIKE '%РОСНЕФТЬ%'";
-  const params = [];
+    'SELECT * FROM reports WHERE company_name LIKE $1';
+  const params = [`%${criteria}%`];
   const res = await client.query(query, params);
 
-  if(res.rows.length > 0) {
-    return res.rows[0].company_name;
-  } else {
-    return 'Компания не найдена'
-  }
+  return res;
 }
 
 module.exports = {
