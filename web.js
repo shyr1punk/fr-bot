@@ -9,13 +9,13 @@ app.get('/', (req, res) => {
   res.json({ version: packageInfo.version });
 });
 
-var server = app.listen(process.env.PORT, '0.0.0.0', () => {
+const server = app.listen(process.env.PORT, '0.0.0.0', () => {
   const host = server.address().address;
-  const port = server.address().port;
+  const { port } = server.address();
   console.log('Web server started at http://%s:%s', host, port);
 });
 
-module.exports = function (bot) {
+module.exports = bot => {
   app.post('/' + bot.token, (req, res) => {
     bot.processUpdate(req.body);
     res.sendStatus(200);
