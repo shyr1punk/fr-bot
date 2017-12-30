@@ -2,7 +2,7 @@ var token = process.env.TOKEN;
 
 var Bot = require('node-telegram-bot-api');
 var bot;
-const { search } = require('./database');
+const { searchByName, searchByINN, searchByOKPO } = require('./database');
 const description = require('./description');
 
 if(process.env.NODE_ENV === 'production') {
@@ -14,13 +14,26 @@ if(process.env.NODE_ENV === 'production') {
 
 console.log('Bot server started in the ' + process.env.NODE_ENV + ' mode');
 
-bot.onText(/^/, async function (msg) {
+bot.onText(/^/, msg => {
   console.log('Получили сообщение: ', msg.text);
-  var name = msg.from.first_name;
-  bot.sendMessage(msg.chat.id, 'Ищем...').then(() => {
-    console.log('Ищем...');
+
+  if(/^\d{8}$/.test(msg.text)) {
+    handleOKPO(msg);
+  } else if(/^\d{10}$/.test(msg.text)) {
+    handleINN(msg);
+  } else {
+    handleCompanyName(msg);
+  }
+});
+
+async function handleOKPO(msg) {
+  console.log('Поиск по ОКПО');
+
+  bot.sendMessage(msg.chat.id, 'Ищем по коду ОКПО: ' + msg.text).then(() => {
+    console.log('Ищем по коду ОКПО: ' + msg.text);
   });
-  const {err, res} = await search(msg.text.toUpperCase());
+
+  const {err, res} = await searchByOKPO(msg.text);
   if(res) {
     replyMessage(msg.chat.id, res);
   } else if(err) {
@@ -29,8 +42,40 @@ bot.onText(/^/, async function (msg) {
       console.log('Result send');
     });
   }
+};
 
-});
+async function handleINN(msg) {
+  console.log('Поиск по ИНН');
+
+  bot.sendMessage(msg.chat.id, 'Ищем по коду ИНН: ' + msg.text).then(() => {
+    console.log('Ищем по коду ИНН: ' + msg.text);
+  });
+
+  const {err, res} = await searchByINN(msg.text);
+  if(res) {
+    replyMessage(msg.chat.id, res);
+  } else if(err) {
+    console.log('Error: ', err);
+    bot.sendMessage(msg.chat.id, err.toString()).then(() => {
+      console.log('Result send');
+    });
+  }
+};
+
+async function handleCompanyName(msg) {
+  bot.sendMessage(msg.chat.id, 'Ищем по названию организации: ' + msg.text).then(() => {
+    console.log('Ищем по названию организации: ' + msg.text);
+  });
+  const {err, res} = await searchByName(msg.text.toUpperCase());
+  if(res) {
+    replyMessage(msg.chat.id, res);
+  } else if(err) {
+    console.log('Error: ', err);
+    bot.sendMessage(msg.chat.id, err.toString()).then(() => {
+      console.log('Result send');
+    });
+  }
+}
 
 function replyMessage(chatId, res) {
   if(res.rows.length === 0) {
