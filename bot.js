@@ -15,6 +15,7 @@ if(process.env.NODE_ENV === 'production') {
 console.log('Bot server started in the ' + process.env.NODE_ENV + ' mode');
 
 bot.onText(/^/, async function (msg) {
+  console.log('Получили сообщение: ', msg.text);
   var name = msg.from.first_name;
   bot.sendMessage(msg.chat.id, 'Ищем...').then(() => {
     console.log('Ищем...');
