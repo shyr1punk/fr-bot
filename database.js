@@ -1,4 +1,5 @@
 const { Client } = require('pg');
+
 const client = new Client();
 client.connect();
 
@@ -10,11 +11,10 @@ async function searchByName(criteria) {
     const params = [`%${criteria}%`];
     const res = await client.query(query, params);
 
-    return {err: null, res};
+    return { err: null, res };
   } catch (err) {
-    return {err};
+    return { err };
   }
-
 }
 
 // Поиск по ОКПО
@@ -25,11 +25,10 @@ async function searchByOKPO(criteria) {
     const params = [criteria];
     const res = await client.query(query, params);
 
-    return {err: null, res};
+    return { err: null, res };
   } catch (err) {
-    return {err};
+    return { err };
   }
-
 }
 
 // Поиск по ИНН
@@ -40,14 +39,13 @@ async function searchByINN(criteria) {
     const params = [criteria];
     const res = await client.query(query, params);
 
-    return {err: null, res};
+    return { err: null, res };
   } catch (err) {
-    return {err};
+    return { err };
   }
-
 }
 module.exports = {
   searchByName,
   searchByOKPO,
-  searchByINN
+  searchByINN,
 };
