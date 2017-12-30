@@ -15,11 +15,12 @@ if (process.env.NODE_ENV === 'production') {
 
 console.log('Bot server started in the ' + process.env.NODE_ENV + ' mode');
 
-function companyReport(companyData) {
-  const lines = Object.keys(companyData)
-    .filter(key => companyData[key] !== '0')
-    .map(key => `${description[key]}: ${companyData[key]}`);
-
+/**
+ * Разбиваем большое сообщение на < 4096 байт каждое
+ * @param {String[]} lines
+ * @returns {String[]}
+ */
+function splitMessage(lines) {
   const messages = [];
   let currentMessage = '';
 
@@ -31,8 +32,21 @@ function companyReport(companyData) {
     currentMessage = currentMessage + '\n' + line;
   });
   messages.push(currentMessage);
-  console.log(messages);
+
   return messages;
+}
+
+/**
+ * Финансовый отчёт компании
+ * @param {Object[]} companyData
+ * @returns {String[]}
+ */
+function companyReport(companyData) {
+  const lines = Object.keys(companyData)
+    .filter(key => companyData[key] !== '0')
+    .map(key => `${description[key]}: ${companyData[key]}`);
+
+  return splitMessage(lines);
 }
 
 function replyMessage(chatId, res) {
@@ -50,11 +64,13 @@ function replyMessage(chatId, res) {
       });
     });
   } else {
-    // TODO: может быть большое сообщение
-    const companyList = res.rows.map((row, i) => `${i}. ${row.company_name}`).join('\n');
-    console.log('Нашли несколько компаний: \n' + companyList);
-    bot.sendMessage(chatId, companyList).then(() => {
-      console.log('Отправили сообщение: Нашли Нашли несколько компаний');
+    const companyList = res.rows.map((row, i) => `${i}. ${row.company_name}`);
+    console.log('Нашли несколько компаний: \n' + companyList.length);
+    bot.sendMessage(chatId, `Нашли ${companyList.length} компаний:\n`);
+    splitMessage(companyList).forEach(message => {
+      bot.sendMessage(chatId, message).then(() => {
+        console.log(`Отправили сообщение: Нашли ${companyList.length} компаний`);
+      });
     });
   }
 }
