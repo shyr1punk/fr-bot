@@ -6,6 +6,10 @@ let bot;
 const { searchByName, searchByINN, searchByOKPO } = require('./database');
 const description = require('./description');
 
+const HELP_MESSAGE =
+  'Бот позволяет получить финансовую отчётность организаций\n' +
+  'Введите *название организации*, номер *ИНН* или код *ОКПО*';
+
 if (process.env.NODE_ENV === 'production') {
   bot = new Bot(token);
   bot.setWebHook(process.env.HEROKU_URL + bot.token);
@@ -126,7 +130,27 @@ async function handleCompanyName(msg) {
   }
 }
 
-bot.onText(/^/, msg => {
+/**
+ * Обработка команд
+ */
+bot.onText(/\/.*/, (msg, match) => {
+  console.log('Получили команду: ' + match[0]);
+  const command = match[0];
+  if (command === '/start' || command === '/help') {
+    bot.sendMessage(msg.chat.id, HELP_MESSAGE, { parse_mode: 'Markdown' });
+    return;
+  }
+
+  console.log('Обработчик по-умолчанию, команда ' + match[0]);
+  bot.sendMessage(msg.chat.id, 'Неизвестная команда: ' + match[0]).then(() => {
+    console.log('Неизвестная команда: ' + match[0]);
+  });
+});
+
+/**
+ * Обработка любого сообщения, кроме начинающегося на "/"
+ */
+bot.onText(/^[^/].*$/, msg => {
   console.log('Получили сообщение: ', msg.text);
 
   if (/^\d{8}$/.test(msg.text)) {
