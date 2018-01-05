@@ -272,3 +272,11 @@ CREATE TABLE reports (
 );
 
 ALTER TABLE reports ADD FOREIGN KEY (okpo) REFERENCES companies (okpo);
+
+CREATE INDEX ON companies USING gin(to_tsvector('russian', company_name));
+
+CREATE INDEX reports_okpo_idx ON reports (okpo);
+
+CREATE INDEX companies_inn_idx ON companies (inn);
+
+-- set default_text_search_config = russian;

@@ -35,11 +35,12 @@ async function searchByINN(criteria) {
 async function searchByName(criteria) {
   try {
     const query =
-      'SELECT * FROM companies WHERE LOWER(company_name) LIKE LOWER($1)';
+      'SELECT * FROM companies ' +
+        "WHERE to_tsvector('russian', company_name) @@ plainto_tsquery('russian', $1);";
     const params = [`%${criteria}%`];
     const res = await client.query(query, params);
 
-    // Если ничего не нашли или наши много - возвращаем результат
+    // Если ничего не нашли или нашли много - возвращаем результат
     if (res.rows.length !== 1) {
       return { err: null, res };
     }
