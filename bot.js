@@ -1,6 +1,7 @@
 const token = process.env.TOKEN;
 
 const Bot = require('node-telegram-bot-api');
+const Promise = require('bluebird');
 
 let bot;
 const { searchByName, searchByINN, searchByOKPO } = require('./database');
@@ -53,6 +54,18 @@ function companyReport(companyData) {
   return splitMessage(lines);
 }
 
+/**
+ * Отправка сообщений последовательно
+ *
+ * @param {Number} chatId
+ * @param {String[]} messages
+ * @returns Promise
+ */
+function sendMessages(chatId, messages) {
+  return Promise
+    .mapSeries(messages, message => bot.sendMessage(chatId, message));
+}
+
 function replyMessage(chatId, res) {
   if (res.rows.length === 0) {
     console.log('Ничего не нашли');
@@ -61,20 +74,15 @@ function replyMessage(chatId, res) {
     });
   } else if (res.rows.length === 1) {
     console.log('Нашли одну компанию: ' + res.rows[0].company_name);
-    const messages = companyReport(res.rows[0]);
-    messages.forEach(message => {
-      bot.sendMessage(chatId, message).then(() => {
-        console.log('Отправили данные по компании ' + res.rows[0].company_name);
-      });
+    sendMessages(chatId, companyReport(res.rows[0])).then(() => {
+      console.log('Отправили данные по компании ' + res.rows[0].company_name);
     });
   } else {
-    const companyList = res.rows.map((row, i) => `${i}. ${row.company_name}`);
+    const companyList = res.rows.map((row, i) => `${i + 1}. ${row.company_name}`);
     console.log('Нашли несколько компаний: \n' + companyList.length);
     bot.sendMessage(chatId, `Нашли ${companyList.length} компаний:\n`);
-    splitMessage(companyList).forEach(message => {
-      bot.sendMessage(chatId, message).then(() => {
-        console.log(`Отправили сообщение: Нашли ${companyList.length} компаний`);
-      });
+    sendMessages(chatId, splitMessage(companyList)).then(() => {
+      console.log(`Отправили сообщение: Нашли ${companyList.length} компаний`);
     });
   }
 }
