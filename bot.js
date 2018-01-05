@@ -78,9 +78,11 @@ function replyMessage(chatId, res) {
       console.log('Отправили данные по компании ' + res.rows[0].company_name);
     });
   } else {
-    const companyList = res.rows.map((row, i) => `${i + 1}. ${row.company_name}`);
+    const companyList = res.rows.map((row, i) => `${i + 1}. ${row.company_name} (${row.okpo})`);
     console.log('Нашли несколько компаний: \n' + companyList.length);
-    bot.sendMessage(chatId, `Нашли ${companyList.length} компаний:\n`);
+    bot.sendMessage(chatId, `Нашли ${companyList.length} компаний:\n` +
+      'Уточните запрос или введите код ОКПО нужной компании\n' +
+      '№. Название компании (Код ОКПО)');
     sendMessages(chatId, splitMessage(companyList)).then(() => {
       console.log(`Отправили сообщение: Нашли ${companyList.length} компаний`);
     });
