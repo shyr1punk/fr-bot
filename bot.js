@@ -86,7 +86,9 @@ async function handleOKPO(msg) {
     console.log('Ищем по коду ОКПО: ' + msg.text);
   });
 
+  console.time('searchByINN');
   const { err, res } = await searchByOKPO(msg.text);
+  console.timeEnd('searchByINN');
   if (res) {
     replyMessage(msg.chat.id, res);
   } else if (err) {
@@ -104,7 +106,9 @@ async function handleINN(msg) {
     console.log('Ищем по коду ИНН: ' + msg.text);
   });
 
+  console.time('searchByINN');
   const { err, res } = await searchByINN(msg.text);
+  console.timeEnd('searchByINN');
   if (res) {
     replyMessage(msg.chat.id, res);
   } else if (err) {
@@ -119,7 +123,10 @@ async function handleCompanyName(msg) {
   bot.sendMessage(msg.chat.id, 'Ищем по названию организации: ' + msg.text).then(() => {
     console.log('Ищем по названию организации: ' + msg.text);
   });
-  const { err, res } = await searchByName(msg.text.toUpperCase());
+
+  console.time('searchByCompanyName');
+  const { err, res } = await searchByName(msg.text);
+  console.timeEnd('searchByCompanyName');
   if (res) {
     replyMessage(msg.chat.id, res);
   } else if (err) {
