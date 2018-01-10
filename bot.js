@@ -2,6 +2,7 @@ const token = process.env.TOKEN;
 
 const Bot = require('node-telegram-bot-api');
 const Promise = require('bluebird');
+const stat = require('bot-metrica')('47260884');
 
 let bot;
 const { searchByName, searchByINN, searchByOKPO } = require('./database');
@@ -168,6 +169,8 @@ bot.onText(/\/.*/, (msg, match) => {
  * Обработка любого сообщения, кроме начинающегося на "/"
  */
 bot.onText(/^[^/].*$/, msg => {
+  stat.track(msg.from.id, msg);
+
   console.log('Получили сообщение: ', msg.text);
 
   if (/^\d{8}$/.test(msg.text)) {
