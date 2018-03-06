@@ -13,6 +13,9 @@
   },
   "author": "Volodymyr Lut",
   "license": "ISC",
+  "engines": {
+    "node": ">= 8.4.0"
+  },
   "dependencies": {
     "bluebird": "^3.5.1",
     "body-parser": "^1.15.0",
