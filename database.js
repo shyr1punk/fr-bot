@@ -1,7 +1,9 @@
 const { Client } = require('pg');
 
 const client = new Client();
-client.connect();
+client.connect()
+  .then(() => console.log('pg connected'))
+  .catch(err => console.error('pg connection error', err.stack));
 
 // Поиск по ОКПО
 async function searchByOKPO(criteria) {
